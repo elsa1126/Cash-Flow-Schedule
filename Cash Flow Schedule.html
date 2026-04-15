@@ -1,0 +1,274 @@
+import React from 'react';
+import { 
+  Wallet, 
+  TrendingDown, 
+  TrendingUp, 
+  AlertTriangle, 
+  Lightbulb, 
+  Target, 
+  Calendar, 
+  Flag,
+  ArrowRight
+} from 'lucide-react';
+
+const timelineData = [
+  {
+    id: 1,
+    stage: '第一階段：籌備啟動期',
+    time: '活動前 2.5 ~ 3 個月',
+    goal: '搶下場地、產出視覺、準備售票',
+    warning: '現金流警報：此階段完全沒有收入，是團隊資金壓力最大的「死亡之谷」。',
+    warningType: 'danger',
+    outflows: [
+      { item: '場地租金與保證金 (P0)', amount: -25000, note: '12k租金 + 10k押金 + 3k拆裝' },
+      { item: '主視覺設計與海報訂金 (P2)', amount: -2500, note: '假設先付 50% 給廠商' }
+    ],
+    inflows: [],
+    netFlow: -27500,
+    cumulativeBalance: -27500,
+    actionNote: '團隊核心成員必須先準備約 3 萬元 的「啟動周轉金」來代墊，否則連場地都訂不下來。'
+  },
+  {
+    id: 2,
+    stage: '第二階段：早鳥票開賣',
+    time: '活動前 1.5 ~ 2 個月',
+    goal: '現金回血，鎖定死忠參與者',
+    warning: '造血關鍵：早鳥票是確保活動能繼續推進的生命線。',
+    warningType: 'success',
+    outflows: [
+      { item: '城市走訪前置訂金 (P0)', amount: -5000, note: '與店家確認合作的初期費用' },
+      { item: '海報印刷尾款 (P2)', amount: -2500, note: '' }
+    ],
+    inflows: [
+      { item: '早鳥票收入', amount: 45000, note: '50張 x 900元' }
+    ],
+    netFlow: 37500,
+    cumulativeBalance: 10000,
+    actionNote: '終於轉虧為盈，可將第一階段的墊款先還給團隊。'
+  },
+  {
+    id: 3,
+    stage: '第三階段：一般票開賣與衝刺期',
+    time: '活動前 2 ~ 4 週',
+    goal: '衝刺最終票房，確認所有硬體與保險',
+    outflows: [
+      { item: '保險費用 (P0)', amount: -5000, note: '活動前必須繳清投保' },
+      { item: '音控設備訂金 (P1)', amount: -7500, note: '假設先付 30% 押期' }
+    ],
+    inflows: [
+      { item: '一般單人票收入', amount: 12000, note: '10張 x 1200元' },
+      { item: '雙人票收入', amount: 40000, note: '20組 x 2000元' }
+    ],
+    netFlow: 39500,
+    cumulativeBalance: 49500,
+    actionNote: '此時資金池最為充裕，請死守這些錢絕對不能挪用，因為最大筆的尾款都在活動當天。'
+  },
+  {
+    id: 4,
+    stage: '第四階段：活動執行期',
+    time: 'Day 1 & Day 2',
+    goal: '確保活動順利，現場各項尾款結清',
+    outflows: [
+      { item: '音控設備尾款 (P1)', amount: -17500, note: '現場測試無誤後結清' },
+      { item: '城市走訪尾款 (P0)', amount: -12000, note: '付給合作店家' },
+      { item: '晚會點心 (P1)', amount: -7000, note: '現場結帳' },
+      { item: '表演者禮金 (P2)', amount: -5000, note: '5組 x 1000元，現場發放' },
+      { item: '預備金動用 (P1)', amount: -15000, note: '先抓最壞打算全數用完' }
+    ],
+    inflows: [
+      { item: '現場零星售票', amount: 0, note: '暫不估算' }
+    ],
+    netFlow: -56500,
+    cumulativeBalance: -7000,
+    actionNote: '最差情況下動用完 1.5 萬預備金後的當期餘額。'
+  },
+  {
+    id: 5,
+    stage: '第五階段：結案退款期',
+    time: '活動後 1 ~ 2 週',
+    goal: '場地復原退押金，團隊財務結算',
+    outflows: [],
+    inflows: [
+      { item: '場地保證金退還', amount: 10000, note: '無扣款情況下全額退還' }
+    ],
+    netFlow: 10000,
+    cumulativeBalance: 3000,
+    actionNote: '活動順利落幕，最終專案結餘為正。'
+  }
+];
+
+export default function App() {
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('zh-TW', {
+      style: 'currency',
+      currency: 'TWD',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-8">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* Header Section */}
+        <header className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-indigo-600 p-6 md:p-8 text-white">
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <Wallet className="w-8 h-8" />
+              嘉義方案｜活動現金流時間線預估
+            </h1>
+            <p className="mt-2 text-indigo-100 text-lg">零贊助 / P3 全砍版 / 工作人員餐宿自理</p>
+          </div>
+          
+          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 bg-white">
+            <div className="p-4 rounded-xl border border-rose-100 bg-rose-50 flex flex-col justify-center">
+              <div className="text-sm font-medium text-rose-600 mb-1">總預計支出 (P0+P1+P2)</div>
+              <div className="text-2xl font-bold text-rose-700">{formatCurrency(94000)}</div>
+            </div>
+            <div className="p-4 rounded-xl border border-emerald-100 bg-emerald-50 flex flex-col justify-center">
+              <div className="text-sm font-medium text-emerald-600 mb-1">總預計收入 (最保守票房)</div>
+              <div className="text-2xl font-bold text-emerald-700">{formatCurrency(97000)}</div>
+            </div>
+            <div className="p-4 rounded-xl border border-indigo-100 bg-indigo-50 flex flex-col justify-center">
+              <div className="text-sm font-medium text-indigo-600 mb-1">最終預計結餘</div>
+              <div className="text-2xl font-bold text-indigo-700">{formatCurrency(3000)}</div>
+            </div>
+          </div>
+        </header>
+
+        {/* Timeline Section */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 px-2">
+            <Calendar className="w-6 h-6 text-indigo-600" />
+            各階段現金流解析
+          </h2>
+          
+          <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+            {timelineData.map((stage, index) => (
+              <div key={stage.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                
+                {/* Timeline Node */}
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-indigo-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                  <span className="font-bold text-sm">{stage.id}</span>
+                </div>
+                
+                {/* Content Card */}
+                <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col gap-1 mb-4">
+                    <span className="text-sm font-semibold text-indigo-600">{stage.time}</span>
+                    <h3 className="text-lg font-bold text-slate-800">{stage.stage}</h3>
+                    <div className="flex items-start gap-1.5 text-sm text-slate-600 mt-1">
+                      <Target className="w-4 h-4 mt-0.5 text-slate-400 shrink-0" />
+                      <span>{stage.goal}</span>
+                    </div>
+                  </div>
+
+                  {stage.warning && (
+                    <div className={`p-3 rounded-lg text-sm mb-4 flex items-start gap-2 ${
+                      stage.warningType === 'danger' ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                    }`}>
+                      {stage.warningType === 'danger' ? <AlertTriangle className="w-5 h-5 shrink-0" /> : <Flag className="w-5 h-5 shrink-0" />}
+                      <span className="font-medium">{stage.warning}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {/* Outflows */}
+                    {stage.outflows.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                          <TrendingDown className="w-3 h-3 text-rose-500" /> 資金流出
+                        </h4>
+                        <ul className="space-y-2">
+                          {stage.outflows.map((item, idx) => (
+                            <li key={idx} className="flex justify-between text-sm">
+                              <span className="text-slate-600">
+                                {item.item}
+                                {item.note && <span className="block text-xs text-slate-400 mt-0.5">{item.note}</span>}
+                              </span>
+                              <span className="font-medium text-rose-600 shrink-0 ml-2">{formatCurrency(item.amount)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Inflows */}
+                    {stage.inflows.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1 mt-3">
+                          <TrendingUp className="w-3 h-3 text-emerald-500" /> 資金流入
+                        </h4>
+                        <ul className="space-y-2">
+                          {stage.inflows.map((item, idx) => (
+                            <li key={idx} className="flex justify-between text-sm">
+                              <span className="text-slate-600">
+                                {item.item}
+                                {item.note && <span className="block text-xs text-slate-400 mt-0.5">{item.note}</span>}
+                              </span>
+                              <span className="font-medium text-emerald-600 shrink-0 ml-2">+{formatCurrency(item.amount)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Balances */}
+                  <div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-slate-500 mb-1">當期淨流</div>
+                      <div className={`text-sm font-bold ${stage.netFlow < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        {stage.netFlow > 0 ? '+' : ''}{formatCurrency(stage.netFlow)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-slate-500 mb-1">階段累計結餘</div>
+                      <div className={`text-lg font-bold ${stage.cumulativeBalance < 0 ? 'text-rose-600' : 'text-slate-800'}`}>
+                        {formatCurrency(stage.cumulativeBalance)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Note */}
+                  {stage.actionNote && (
+                    <div className="mt-4 bg-indigo-50/50 rounded-lg p-3 text-sm text-indigo-700 flex gap-2">
+                      <Lightbulb className="w-4 h-4 shrink-0 mt-0.5 text-indigo-500" />
+                      <p>{stage.actionNote}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action Guidelines */}
+        <div className="bg-slate-800 rounded-2xl p-6 md:p-8 text-white shadow-lg">
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <Target className="w-6 h-6 text-amber-400" />
+            現金流三大行動指引
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-slate-700/50 p-5 rounded-xl border border-slate-600">
+              <div className="w-8 h-8 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center font-bold mb-3">1</div>
+              <h3 className="font-bold text-lg mb-2 text-amber-300">備妥三萬啟動金</h3>
+              <p className="text-sm text-slate-300">活動一開始必定是「負現金流」，團隊需先達成共識，籌措前期的 3 萬元代墊款以支付場地與設計訂金。</p>
+            </div>
+            <div className="bg-slate-700/50 p-5 rounded-xl border border-slate-600">
+              <div className="w-8 h-8 rounded-full bg-emerald-400/20 text-emerald-400 flex items-center justify-center font-bold mb-3">2</div>
+              <h3 className="font-bold text-lg mb-2 text-emerald-300">早鳥票是生死線</h3>
+              <p className="text-sm text-slate-300">若早鳥票賣不到 30 張，第三階段將付不出設備訂金。屆時必須立刻啟動縮減 P2 預算（如取消海報印刷等）的備案。</p>
+            </div>
+            <div className="bg-slate-700/50 p-5 rounded-xl border border-slate-600">
+              <div className="w-8 h-8 rounded-full bg-blue-400/20 text-blue-400 flex items-center justify-center font-bold mb-3">3</div>
+              <h3 className="font-bold text-lg mb-2 text-blue-300">獨立管理預備金</h3>
+              <p className="text-sm text-slate-300">15,000 元的預備金在共同戶頭裡極易被挪用。建議將這筆錢獨立記帳或實體保管，絕不因「看似有錢」而隨意增加開銷。</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
