@@ -44,7 +44,7 @@
       </div>
     </header>
 
-    <!-- 視覺化圖表區塊 (新增) -->
+    <!-- 視覺化圖表區塊 -->
     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
       <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
         <i data-lucide="bar-chart-3" class="w-6 h-6 text-indigo-600"></i>
@@ -65,6 +65,17 @@
       <!-- 動態生成時間線的容器 -->
       <div id="timeline-container" class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
         <!-- 內容由下方 JavaScript 動態填入 -->
+      </div>
+    </div>
+
+    <!-- 支出項目時程甘特圖區塊 -->
+    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mt-8">
+      <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
+        <i data-lucide="gantt-chart" class="w-6 h-6 text-rose-600"></i>
+        支出項目時程甘特圖
+      </h2>
+      <div class="w-full h-[400px] relative">
+        <canvas id="ganttChart"></canvas>
       </div>
     </div>
 
@@ -279,15 +290,15 @@
     // 渲染 Lucide 圖示
     lucide.createIcons();
 
-    // 初始化 Chart.js 圖表
-    const ctx = document.getElementById('cashFlowChart').getContext('2d');
+    // 初始化 Chart.js 資金折線圖
+    const ctxCashFlow = document.getElementById('cashFlowChart').getContext('2d');
     
     // 準備圖表資料
     const labels = timelineData.map(d => d.time);
     const netFlows = timelineData.map(d => d.netFlow);
     const cumulativeBalances = timelineData.map(d => d.cumulativeBalance);
 
-    new Chart(ctx, {
+    new Chart(ctxCashFlow, {
       type: 'line',
       data: {
         labels: labels,
@@ -348,6 +359,103 @@
           },
           x: {
             grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // 初始化 Chart.js 甘特圖
+    const ctxGantt = document.getElementById('ganttChart').getContext('2d');
+
+    // 定義各階段的時間軸 (4.0 到 8.9 模擬)
+    const stageTimes = [
+      { start: 4.0, end: 5.3 }, // 第一階段
+      { start: 5.4, end: 6.9 }, // 第二階段
+      { start: 6.0, end: 7.3 }, // 第三階段
+      { start: 7.4, end: 7.9 }, // 第四階段
+      { start: 8.0, end: 8.9 }  // 第五階段
+    ];
+
+    // 動態產生支出項目的甘特圖資料
+    const ganttData = [];
+    timelineData.forEach((stage, idx) => {
+      if(stage.outflows && stage.outflows.length > 0) {
+        stage.outflows.forEach(outflow => {
+          ganttData.push({
+            label: outflow.item + ' (' + formatCurrency(Math.abs(outflow.amount)) + ')',
+            start: stageTimes[idx].start,
+            end: stageTimes[idx].end
+          });
+        });
+      }
+    });
+
+    // 將資料轉換為 Chart.js Floating Bar 所需的格式 [start, end]
+    const barData = ganttData.map(task => [task.start, task.end]);
+
+    new Chart(ctxGantt, {
+      type: 'bar',
+      data: {
+        labels: ganttData.map(task => task.label),
+        datasets: [{
+          label: '支出發生期間',
+          data: barData,
+          backgroundColor: 'rgba(244, 63, 94, 0.8)', // Rose for expense
+          borderColor: 'rgb(225, 29, 72)',
+          borderWidth: 1,
+          borderRadius: 8,
+          barPercentage: 0.6
+        }]
+      },
+      options: {
+        indexAxis: 'y', // 將圖表轉為橫向
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false // 隱藏圖例，因為顏色已經夠清楚了
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                // 將數值轉換回大概的月份文字，例如 4.5 -> "4月中"
+                const convertToMonthString = (val) => {
+                  const month = Math.floor(val);
+                  const fraction = val - month;
+                  let period = '上旬';
+                  if(fraction >= 0.3 && fraction < 0.7) period = '中旬';
+                  else if(fraction >= 0.7) period = '下旬';
+                  return `${month}月${period}`;
+                };
+                
+                const startVal = context.raw[0];
+                const endVal = context.raw[1];
+                return `${convertToMonthString(startVal)} - ${convertToMonthString(endVal)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 4, // 從 4 月開始
+            max: 9, // 到 8 月結束 (設定 9 以保留空間)
+            ticks: {
+              stepSize: 1,
+              callback: function(value) {
+                if(value >= 4 && value <= 8) {
+                  return value + '月';
+                }
+                return '';
+              }
+            },
+            grid: {
+              color: '#f1f5f9'
+            }
+          },
+          y: {
+            grid: {
+              display: false
+            }
           }
         }
       }
